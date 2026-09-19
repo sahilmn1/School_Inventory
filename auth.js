@@ -65,6 +65,45 @@ function getCurrentUser() {
   };
 }
 
+async function _getUserProfile(userId) {
+  const res = await fetch(
+    `${_SB_AUTH_URL}/rest/v1/user_profiles?id=eq.${encodeURIComponent(userId)}&select=role`,
+    { headers: getAuthHeaders() },
+  );
+  if (!res.ok) {
+    throw new Error("Unable to verify account permissions");
+  }
+  const profiles = await res.json();
+  return Array.isArray(profiles) ? profiles[0] || null : null;
+}
+
+/* ── Protect administrator-only pages and actions ── */
+async function requireAdmin() {
+  const user = requireAuth();
+  if (!user || !user.id) return false;
+
+  try {
+    const profile = await _getUserProfile(user.id);
+    if (!profile || profile.role !== "admin") {
+      window.location.replace("index.html");
+      return false;
+    }
+    document.body.style.visibility = "visible";
+    return true;
+  } catch (err) {
+    console.error("Admin permission check failed", err);
+    localStorage.removeItem(_SESSION_KEY);
+    window.location.replace("login.html");
+    return false;
+  }
+}
+
+function _setAdminNavVisibility(isAdmin) {
+  document.querySelectorAll('a[href="admin.html"]').forEach((link) => {
+    link.style.display = isAdmin ? "" : "none";
+  });
+}
+
 /* ── Auth headers for Supabase REST requests ── */
 function getAuthHeaders() {
   const sess = _getSession();
@@ -102,6 +141,11 @@ function requireAuth() {
 function _renderUserChip() {
   const user = getCurrentUser();
   if (!user) return;
+
+  _setAdminNavVisibility(user.role === "admin");
+  _getUserProfile(user.id)
+    .then((profile) => _setAdminNavVisibility(profile?.role === "admin"))
+    .catch((err) => console.error("Unable to load account role", err));
 
   const footer = document.querySelector(".sidebar-footer");
   if (footer) {

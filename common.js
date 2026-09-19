@@ -327,6 +327,19 @@ async function ensurePinVerified() {
 async function apiFetch(url, options) {
   const action = (url.match(/[?&]action=([^&]+)/) || [])[1] || "";
   const isPost = options && options.method === "POST";
+  const adminActions = new Set([
+    "getAdminSettings",
+    "saveAdminSettings",
+    "runPurge",
+    "getAuditLog",
+  ]);
+
+  if (adminActions.has(action) && typeof requireAdmin === "function") {
+    const isAdmin = await requireAdmin();
+    if (!isAdmin) {
+      return { success: false, error: "Administrator access required" };
+    }
+  }
 
   let params = {};
   const qIdx = url.indexOf("?");

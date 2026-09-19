@@ -6,7 +6,7 @@
   <title>GSS Inventory — Admin Panel</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body style="visibility:hidden">
 
 <!-- SIDEBAR -->
 <aside class="app-sidebar" id="appSidebar">
@@ -579,8 +579,6 @@ function renderAuditLog() {
   if (infoEl) infoEl.textContent = `Showing ${total} audit record${total!==1?'s':''} (latest 500)`;
 }
 
-requireAuth();
-  loadAdminPage();
 </script>
 
 function openSidebar() {
@@ -826,9 +824,12 @@ function renderAuditLog() {
 }
 
 // Boot
-requireAuth();
-loadAdminPage();
-loadUsers();
+requireAdmin().then((authorized) => {
+  if (authorized) {
+    loadAdminPage();
+    loadUsers();
+  }
+});
 </script>
 
 <script>
