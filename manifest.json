@@ -1,0 +1,48 @@
+{
+  "name": "GSS Inventory System",
+  "short_name": "GSS Inventory",
+  "description": "GSS School Asset & Inventory Management System",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0D1B2A",
+  "theme_color": "#0D1B2A",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Item",
+      "short_name": "Add",
+      "url": "/add.html",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View Items",
+      "short_name": "Items",
+      "url": "/items.html",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Stock History",
+      "short_name": "History",
+      "url": "/history.html",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "prefer_related_applications": false
+}

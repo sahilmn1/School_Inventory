@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GSS Inventory — Stock History</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar" id="appSidebar">
+      <a class="sidebar-brand" href="index.html">
+        <div class="sidebar-brand-icon">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+            <line x1="12" y1="22.08" x2="12" y2="12" />
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-name">GSS Inventory</div>
+          <div class="sidebar-brand-sub">Asset Management</div>
+        </div>
+      </a>
+      <nav class="sidebar-nav">
+        <a href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="add.html"><span class="nav-icon">➕</span> Add Item</a>
+        <a href="items.html"><span class="nav-icon">📦</span> View Items</a>
+        <a href="categories.html"
+          ><span class="nav-icon">🗂️</span> Categories</a
+        >
+        <a href="history.html" class="active"
+          ><span class="nav-icon">📋</span> Stock History</a
+        >
+        <a href="admin.html"><span class="nav-icon">⚙️</span> Admin</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-text">GSS Inventory System</div>
+      </div>
+    </aside>
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="closeSidebar()"
+    ></div>
+
+    <!-- TOP BAR (mobile only) -->
+    <nav class="app-topbar">
+      <a class="topbar-brand" href="index.html">
+        <div class="topbar-brand-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+          </svg>
+        </div>
+        <span class="topbar-brand-name">GSS Inventory</span>
+      </a>
+      <button
+        class="topbar-hamburger"
+        onclick="openSidebar()"
+        aria-label="Menu"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </nav>
+
+    <!-- LOADER -->
+    <div id="loader">
+      <div class="spinner"></div>
+      <p id="loaderMsg">Loading history…</p>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="page-wrapper">
+      <div class="page-content">
+        <div class="container">
+          <!-- Legend cards -->
+          <div class="history-legend">
+            <div class="legend-card legend-in">
+              <div class="legend-icon">⬇</div>
+              <div>
+                <div class="legend-label">Stock IN</div>
+                <div class="legend-desc">Items received / added to stock</div>
+              </div>
+            </div>
+            <div class="legend-card legend-out">
+              <div class="legend-icon">⬆</div>
+              <div>
+                <div class="legend-label">Stock OUT</div>
+                <div class="legend-desc">Items issued / removed from stock</div>
+              </div>
+            </div>
+            <div class="legend-card legend-transfer">
+              <div class="legend-icon">⇄</div>
+              <div>
+                <div class="legend-label">Transfer</div>
+                <div class="legend-desc">Item moved between locations</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">Stock Movement History</span>
+                <p
+                  style="
+                    font-size: 13px;
+                    color: var(--clr-muted);
+                    margin-top: 3px;
+                  "
+                >
+                  Full audit log of every stock IN, OUT, and Transfer movement
+                  with timestamps.
+                </p>
+              </div>
+              <a href="items.html" class="btn btn-outline btn-sm"
+                >← Back to Items</a
+              >
+            </div>
+
+            <!-- Filters -->
+            <div
+              style="
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--clr-border);
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <div class="search-wrap" style="flex: 1; min-width: 200px">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  id="historySearch"
+                  class="form-control search-input"
+                  placeholder="Search item, reason, handled by, location…"
+                  oninput="filterHistory()"
+                />
+              </div>
+              <select
+                id="historyItemFilter"
+                class="form-select"
+                style="width: auto; min-width: 160px"
+                onchange="filterHistory()"
+              >
+                <option value="">All Items</option>
+              </select>
+              <select
+                id="historyTypeFilter"
+                class="form-select"
+                style="width: auto; min-width: 140px"
+                onchange="filterHistory()"
+              >
+                <option value="">All Types</option>
+                <option value="IN">⬇ Stock IN</option>
+                <option value="OUT">⬆ Stock OUT</option>
+                <option value="TRANSFER">⇄ Transfer</option>
+              </select>
+            </div>
+
+            <div class="table-responsive">
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th style="text-align: center">Qty</th>
+                    <th>Location</th>
+                    <th>Reason</th>
+                    <th>Handled By</th>
+                    <th style="text-align: center">Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                  <tr>
+                    <td
+                      colspan="8"
+                      style="
+                        text-align: center;
+                        padding: 30px;
+                        color: var(--clr-muted);
+                      "
+                    >
+                      Loading…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              class="empty-state"
+              id="historyEmptyState"
+              style="display: none"
+            >
+              <div class="empty-icon">📋</div>
+              <h3>No movement records yet</h3>
+              <p>
+                Stock movements will appear here when you use the 📦 button on
+                the Items page.
+              </p>
+            </div>
+
+            <div class="table-footer">
+              <span class="items-info" id="historyInfo"></span>
+              <nav><ul class="pagination" id="historyPagination"></ul></nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="history.js"></script>
+    <script>
+      requireAuth();
+      loadHistoryPage();
+    </script>
+
+    <script>
+      function openSidebar() {
+        document.getElementById("appSidebar").classList.add("open");
+        document.getElementById("sidebarOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeSidebar() {
+        document.getElementById("appSidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      // Close on escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSidebar();
+      });
+    </script>
+  </body>
+</html>

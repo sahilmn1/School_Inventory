@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GSS Inventory — Items</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar" id="appSidebar">
+  <a class="sidebar-brand" href="index.html">
+    <div class="sidebar-brand-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">GSS Inventory</div>
+      <div class="sidebar-brand-sub">Asset Management</div>
+    </div>
+  </a>
+  <nav class="sidebar-nav">
+    <a href="index.html" ><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="add.html" ><span class="nav-icon">➕</span> Add Item</a>
+    <a href="items.html" class="active"><span class="nav-icon">📦</span> View Items</a>
+    <a href="categories.html" ><span class="nav-icon">🗂️</span> Categories</a>
+    <a href="history.html" ><span class="nav-icon">📋</span> Stock History</a>
+    <a href="admin.html" ><span class="nav-icon">⚙️</span> Admin</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">GSS Inventory System</div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- TOP BAR (mobile only) -->
+<nav class="app-topbar">
+  <a class="topbar-brand" href="index.html">
+    <div class="topbar-brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+    </div>
+    <span class="topbar-brand-name">GSS Inventory</span>
+  </a>
+  <button class="topbar-hamburger" onclick="openSidebar()" aria-label="Menu">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p id="loaderMsg">Loading items…</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4>Confirm Delete</h4>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:15px">Delete <strong id="deleteItemName"></strong>?</p>
+      <p style="font-size:13px;color:var(--clr-muted);margin-top:6px">This will permanently remove the item from the sheet. This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER MODAL -->
+<div class="modal-overlay" id="imageModal" onclick="closeModal('imageModal')">
+  <div style="max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center">
+    <img id="imageModalImg" src="" alt="" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)" onclick="event.stopPropagation()" />
+  </div>
+</div>
+
+<!-- ITEM DETAIL MODAL -->
+<div class="modal-overlay" id="itemDetailModal">
+  <div class="modal-box" style="max-width:680px">
+    <div class="modal-header">
+      <div>
+        <h4 id="detailItemName" style="font-size:17px">Item Details</h4>
+        <div id="detailItemMeta" style="font-size:12.5px;color:var(--muted);margin-top:3px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('itemDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+
+      <!-- Stock overview -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)">
+        <div style="padding:18px 20px;text-align:center;border-right:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Initial Stock</div>
+          <div id="detailInitialQty" style="font-size:32px;font-weight:800;color:var(--text)">—</div>
+        </div>
+        <div style="padding:18px 20px;text-align:center;border-right:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Current Stock</div>
+          <div id="detailCurrentQty" style="font-size:32px;font-weight:800;color:var(--blue)">—</div>
+        </div>
+        <div style="padding:18px 20px;text-align:center">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Location</div>
+          <div id="detailLocation" style="font-size:14px;font-weight:700;color:var(--text)">—</div>
+        </div>
+      </div>
+
+      <!-- History table -->
+      <div style="padding:16px 20px 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">
+        Movement History
+      </div>
+      <div style="max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch">
+        <table class="inv-table" style="min-width:auto">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Type</th>
+              <th style="text-align:center">Qty</th>
+              <th>From → To</th>
+              <th>Reason</th>
+              <th style="text-align:center">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="detailHistoryBody">
+            <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="detailHistoryEmpty" style="display:none;text-align:center;padding:30px;color:var(--muted);font-size:13px">
+        No stock movements recorded yet.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('itemDetailModal')">Close</button>
+      <button class="btn btn-primary" id="detailStockBtn" onclick="openStockFromDetail()">📦 Record Movement</button>
+    </div>
+  </div>
+</div>
+
+<!-- STOCK MOVEMENT MODAL -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-header">
+      <div>
+        <h4>📦 Stock Movement</h4>
+        <div style="font-size:13px;color:var(--clr-muted);margin-top:2px" id="stockModalItemName"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Balance bar -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+        <div class="stock-balance-bar" style="flex-direction:column;align-items:center;padding:12px">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Initial Stock</span>
+          <span id="stockInitialQty" style="font-size:24px;font-weight:800;color:var(--text);margin-top:2px">0</span>
+        </div>
+        <div class="stock-balance-bar" style="flex-direction:column;align-items:center;padding:12px;background:var(--blue-lt);border-color:var(--blue-mid)">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-dk)">Current Stock</span>
+          <span id="stockCurrentQty" style="font-size:24px;font-weight:800;color:var(--blue);margin-top:2px">0</span>
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
+
+        <!-- Movement Type -->
+        <div class="form-group">
+          <label class="form-label">Movement Type <span class="required">*</span></label>
+          <select id="stockMovementType" class="form-select">
+            <option value="IN">⬇ Stock IN (Received)</option>
+            <option value="OUT">⬆ Stock OUT (Issued)</option>
+            <option value="TRANSFER">⇄ Transfer (Move)</option>
+          </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group">
+          <label class="form-label">Quantity <span class="required">*</span></label>
+          <input id="stockQtyInput" class="form-control" type="number" min="1" value="1" placeholder="1" />
+        </div>
+
+        <!-- From Location -->
+        <div class="form-group">
+          <label class="form-label">From Location</label>
+          <div class="ac-wrap" id="stockFromWrap">
+            <input id="stockFromLocation" class="form-control ac-input"
+                   placeholder="Search location…" autocomplete="off"
+                   oninput="acFilterStockLoc('from')" onfocus="acOpenStockLoc('from')" />
+            <div class="ac-dropdown" id="stockFromDropdown"></div>
+          </div>
+        </div>
+
+        <!-- To Location -->
+        <div class="form-group" id="transferLocationRow">
+          <label class="form-label" id="toLocationLabel">To Location</label>
+          <div class="ac-wrap" id="stockToWrap">
+            <input id="stockToLocation" class="form-control ac-input"
+                   placeholder="Search or create location…" autocomplete="off"
+                   oninput="acFilterStockLoc('to')" onfocus="acOpenStockLoc('to')" />
+            <div class="ac-dropdown" id="stockToDropdown"></div>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Reason / Notes</label>
+          <input id="stockReason" class="form-control" placeholder="e.g. Received from vendor, Issued to Lab 3, Maintenance…" />
+        </div>
+
+        <!-- Handled By -->
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Handled By</label>
+          <input id="stockHandledBy" class="form-control" placeholder="Name of person handling this movement" />
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('stockModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStockMovement()">
+        ✅ Record Movement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TRASH MODAL -->
+<div class="modal-overlay" id="trashModal">
+  <div class="modal-box" style="max-width:640px">
+    <div class="modal-header">
+      <div>
+        <h4>🗑️ Trash — Deleted Items</h4>
+        <div style="font-size:13px;color:var(--clr-muted);margin-top:2px">Restore accidentally deleted items within 90 days</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('trashModal')">✕</button>
+    </div>
+    <div class="modal-body" id="trashModalBody" style="max-height:420px;overflow-y:auto">
+      <div style="text-align:center;padding:30px;color:var(--clr-muted)">Loading…</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('trashModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="page-wrapper">
+<div class="page-content">
+  <div class="container">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Inventory Items</span>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <a href="history.html" class="btn btn-outline btn-sm">📋 History</a>
+          <button class="btn btn-outline btn-sm" onclick="openTrashModal()" style="border-color:#f59e0b;color:#d97706">
+            🗑️ Trash
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="forceRefresh()" title="Clear cache and reload fresh data">
+            🔄 Refresh
+          </button>
+          <a href="add.html" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Item
+          </a>
+          <button class="btn btn-success btn-sm" onclick="exportItemsListPDF()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      <div style="padding:16px 24px 4px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+          <div class="search-wrap" style="flex:1;min-width:220px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" class="form-control search-input"
+                   placeholder="Search by name, brand, location, barcode…"
+                   oninput="searchItems()" />
+          </div>
+          <select id="categoryFilter" class="form-select" style="width:auto;min-width:160px" onchange="searchItems()">
+            <option value="">All Categories</option>
+          </select>
+          <select id="locationFilter" class="form-select" style="width:auto;min-width:140px" onchange="searchItems()">
+            <option value="">All Locations</option>
+          </select>
+          <button class="btn btn-outline btn-sm" id="selectModeBtn" onclick="toggleSelectMode()" title="Select items to see combined total">
+            ☑️ Select
+          </button>
+        </div>
+      </div>
+
+      <!-- SUMMARY BAR — shown when search has results -->
+      <div id="summaryBar" style="display:none;margin:0 24px 0;padding:12px 16px;background:var(--blue-lt);border:1px solid var(--blue-mid);border-radius:var(--r-md);font-size:13px;color:var(--blue-dk)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div id="summaryAll" style="font-weight:600"></div>
+          <div id="summarySelected" style="display:none;font-weight:700;color:var(--success);background:var(--success-lt);padding:4px 12px;border-radius:999px;font-size:12.5px"></div>
+        </div>
+        <div id="summaryBreakdown" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <!-- SELECT MODE BAR — shown when select mode is active -->
+      <div id="selectBar" style="display:none;margin:8px 24px 0;padding:10px 16px;background:var(--navy);border-radius:var(--r-md);color:#fff;display:none;align-items:center;gap:12px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600">
+          <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)" style="width:16px;height:16px;cursor:pointer" />
+          Select All Results
+        </label>
+        <span id="selectCount" style="font-size:13px;opacity:.8">0 selected</span>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="clearSelection()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- TABLE (desktop) -->
+      <div class="table-responsive" id="tableWrapper">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th id="checkboxTh" style="width:36px;display:none"><input type="checkbox" id="selectAllCheck2" onchange="toggleSelectAll(this.checked)" style="width:15px;height:15px;cursor:pointer" /></th>
+              <th style="width:58px">Photo</th>
+              <th>Item / Category</th>
+              <th>Brand</th>
+              <th>Model</th>
+              <th>Unit</th>
+              <th>Condition</th>
+              <th>Qty</th>
+              <th>Location</th>
+              <th>Barcode</th>
+              <th style="width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- CARD VIEW (mobile) -->
+      <div id="itemsCardView" style="display:none;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+
+      <div class="empty-state" id="emptyState" style="display:none">
+        <div class="empty-icon">📭</div>
+        <h3>No items found</h3>
+        <p>Try adjusting your search or <a href="add.html">add a new item</a>.</p>
+      </div>
+
+      <div class="table-footer">
+        <span class="items-info" id="itemsInfo"></span>
+        <nav><ul class="pagination" id="pagination"></ul></nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="auth.js"></script>
+<script src="common.js"></script>
+<script src="script.js"></script>
+<script>
+  requireAuth();
+  initItemsPage();
+</script>
+
+<script>
+/* ══════════════════════════════════════════
+   STOCK MODAL — Location Autocomplete
+   Must be after common.js and script.js so
+   escapeHtml and allItems are available.
+══════════════════════════════════════════ */
+
+function _getLocationList() {
+  const locs = new Set();
+  (allItems || []).forEach(r => { if (r[8]) locs.add(r[8]); });
+  return [...locs].sort();
+}
+
+function _hlText(text, q) {
+  if (!q) return escapeHtml(text);
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return escapeHtml(text);
+  return escapeHtml(text.slice(0, idx))
+    + `<strong style="color:var(--blue)">${escapeHtml(text.slice(idx, idx + q.length))}</strong>`
+    + escapeHtml(text.slice(idx + q.length));
+}
+
+function acOpenStockLoc(which)  { _showStockLocDrop(which); }
+function acFilterStockLoc(which){ _showStockLocDrop(which); }
+
+function _showStockLocDrop(which) {
+  const inputId = which === 'from' ? 'stockFromLocation' : 'stockToLocation';
+  const dropId  = which === 'from' ? 'stockFromDropdown' : 'stockToDropdown';
+  const input   = document.getElementById(inputId);
+  const drop    = document.getElementById(dropId);
+  if (!input || !drop) return;
+
+  const q      = (input.value || '').trim();
+  const ql     = q.toLowerCase();
+  const locs   = _getLocationList();
+  const filtered = ql ? locs.filter(l => l.toLowerCase().includes(ql)) : locs;
+
+  // Close the other dropdown
+  const otherId = which === 'from' ? 'stockToDropdown' : 'stockFromDropdown';
+  document.getElementById(otherId)?.classList.remove('open');
+
+  let html = filtered.map(l =>
+    `<div class="ac-item" data-val="${escapeHtml(l)}" style="cursor:pointer">
+      📍 ${_hlText(l, q)}
+    </div>`
+  ).join('');
+
+  if (which === 'to') {
+    const exactMatch = locs.some(l => l.toLowerCase() === ql);
+    if (q && !exactMatch) {
+      html += `<div class="ac-item ac-create" data-val="${escapeHtml(q)}" style="cursor:pointer">
+        ✚ New location: "${escapeHtml(q)}"
+      </div>`;
+    }
+  }
+
+  if (!html) {
+    drop.innerHTML = '<div class="ac-empty">No locations found</div>';
+    drop.classList.add('open');
+    return;
+  }
+  drop.innerHTML = html;
+  drop.classList.add('open');
+
+  // pointerdown fires before blur — prevents dropdown closing before selection
+  drop.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      const val = this.getAttribute('data-val');
+      if (val) acPickStockLoc(which, val);
+    });
+  });
+}
+
+function acPickStockLoc(which, value) {
+  const inputId = which === 'from' ? 'stockFromLocation' : 'stockToLocation';
+  const dropId  = which === 'from' ? 'stockFromDropdown' : 'stockToDropdown';
+  const el = document.getElementById(inputId);
+  const dr = document.getElementById(dropId);
+  if (el) el.value = value;
+  if (dr) dr.classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#stockFromWrap'))
+    document.getElementById('stockFromDropdown')?.classList.remove('open');
+  if (!e.target.closest('#stockToWrap'))
+    document.getElementById('stockToDropdown')?.classList.remove('open');
+});
+</script>
+
+<script>
+function openSidebar() {
+  document.getElementById('appSidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('appSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</script>
+</body>
+</html>

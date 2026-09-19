@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GSS Inventory — Categories</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar" id="appSidebar">
+      <a class="sidebar-brand" href="index.html">
+        <div class="sidebar-brand-icon">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+            <line x1="12" y1="22.08" x2="12" y2="12" />
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-name">GSS Inventory</div>
+          <div class="sidebar-brand-sub">Asset Management</div>
+        </div>
+      </a>
+      <nav class="sidebar-nav">
+        <a href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="add.html"><span class="nav-icon">➕</span> Add Item</a>
+        <a href="items.html"><span class="nav-icon">📦</span> View Items</a>
+        <a href="categories.html" class="active"
+          ><span class="nav-icon">🗂️</span> Categories</a
+        >
+        <a href="history.html"
+          ><span class="nav-icon">📋</span> Stock History</a
+        >
+        <a href="admin.html"><span class="nav-icon">⚙️</span> Admin</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-text">GSS Inventory System</div>
+      </div>
+    </aside>
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="closeSidebar()"
+    ></div>
+
+    <!-- TOP BAR (mobile only) -->
+    <nav class="app-topbar">
+      <a class="topbar-brand" href="index.html">
+        <div class="topbar-brand-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+          </svg>
+        </div>
+        <span class="topbar-brand-name">GSS Inventory</span>
+      </a>
+      <button
+        class="topbar-hamburger"
+        onclick="openSidebar()"
+        aria-label="Menu"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </nav>
+
+    <!-- LOADER -->
+    <div id="loader">
+      <div class="spinner"></div>
+      <p>Loading categories…</p>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ADD/EDIT CATEGORY MODAL -->
+    <div class="modal-overlay" id="catModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h4 id="catModalTitle">Add Category</h4>
+          <button class="modal-close" onclick="closeModal('catModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px">
+            <label class="form-label" for="catName"
+              >Category Name <span class="required">*</span></label
+            >
+            <input
+              id="catName"
+              class="form-control"
+              placeholder="e.g. Computers, Peripherals, Furniture"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="catDesc"
+              >Description
+              <span style="font-weight: 400; color: var(--clr-muted)"
+                >(optional)</span
+              ></label
+            >
+            <textarea
+              id="catDesc"
+              class="form-control"
+              rows="2"
+              placeholder="Brief description of what belongs in this category"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('catModal')">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="catModalSaveBtn"
+            onclick="saveCategory()"
+          >
+            Save Category
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT SUB-CATEGORY MODAL -->
+    <div class="modal-overlay" id="subCatModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h4 id="subCatModalTitle">Add Sub-Category</h4>
+          <button class="modal-close" onclick="closeModal('subCatModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px">
+            <label class="form-label" for="subCatName"
+              >Sub-Category Name <span class="required">*</span></label
+            >
+            <input
+              id="subCatName"
+              class="form-control"
+              placeholder="e.g. Laptops, Desktops, Monitors"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="subCatDesc"
+              >Description
+              <span style="font-weight: 400; color: var(--clr-muted)"
+                >(optional)</span
+              ></label
+            >
+            <textarea
+              id="subCatDesc"
+              class="form-control"
+              rows="2"
+              placeholder="Brief description"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('subCatModal')">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="subCatModalSaveBtn"
+            onclick="saveSubCategory()"
+          >
+            Save Sub-Category
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRM DELETE CATEGORY MODAL -->
+    <div class="modal-overlay" id="catDeleteModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h4>Delete Category</h4>
+          <button class="modal-close" onclick="closeModal('catDeleteModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Delete category <strong id="catDeleteName"></strong>?</p>
+          <p style="font-size: 13px; color: var(--clr-muted); margin-top: 8px">
+            ⚠️ Items in this category will not be deleted, but they will lose
+            their category assignment. Sub-categories will remain and must be
+            deleted separately.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-outline"
+            onclick="closeModal('catDeleteModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-danger" id="catDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-wrapper">
+      <div class="page-content">
+        <div class="container" style="max-width: 960px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title"
+                  >Manage Categories & Sub-Categories</span
+                >
+                <p
+                  style="
+                    font-size: 13px;
+                    color: var(--clr-muted);
+                    margin-top: 3px;
+                  "
+                >
+                  Click ▶ to expand sub-categories. Use
+                  <strong>+ Sub</strong> to add sub-categories under any parent.
+                </p>
+              </div>
+              <button class="btn btn-primary" onclick="openAddCategoryModal()">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add Category
+              </button>
+            </div>
+
+            <div class="card-body" style="padding: 0">
+              <table class="inv-table" id="catTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th style="text-align: right">Counts</th>
+                    <th style="width: 200px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="catTableBody">
+                  <tr>
+                    <td
+                      colspan="4"
+                      style="
+                        text-align: center;
+                        padding: 40px;
+                        color: var(--clr-muted);
+                      "
+                    >
+                      Loading categories…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="empty-state" id="catEmptyState" style="display: none">
+                <div class="empty-icon">🗂️</div>
+                <h3>No categories yet</h3>
+                <p>
+                  Add your first category to start organising your inventory.
+                </p>
+                <button
+                  class="btn btn-primary"
+                  style="margin-top: 16px"
+                  onclick="openAddCategoryModal()"
+                >
+                  Add First Category
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info box -->
+          <div
+            class="card"
+            style="
+              background: var(--clr-primary-lt);
+              border-color: #bfdbfe;
+              margin-top: 20px;
+            "
+          >
+            <div
+              class="card-body"
+              style="display: flex; gap: 16px; align-items: flex-start"
+            >
+              <span style="font-size: 28px; flex-shrink: 0">💡</span>
+              <div>
+                <div
+                  style="
+                    font-weight: 700;
+                    margin-bottom: 4px;
+                    color: var(--clr-primary-dk);
+                  "
+                >
+                  How to use Categories &amp; Sub-Categories
+                </div>
+                <p style="font-size: 14px; color: #1e40af; line-height: 1.6">
+                  Create a <strong>parent category</strong> like
+                  <em>Computers</em>, then add
+                  <strong>sub-categories</strong> like <em>Laptops</em>,
+                  <em>Desktops</em>, <em>Servers</em> beneath it. When adding
+                  items, you can pick both. This two-level structure lets you
+                  filter and report at both the department and equipment-type
+                  level.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="categories.js"></script>
+    <script>
+      requireAuth();
+      loadCategoriesPage();
+    </script>
+
+    <script>
+      function openSidebar() {
+        document.getElementById("appSidebar").classList.add("open");
+        document.getElementById("sidebarOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeSidebar() {
+        document.getElementById("appSidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      // Close on escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSidebar();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GSS Inventory — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar" id="appSidebar">
+  <a class="sidebar-brand" href="index.html">
+    <div class="sidebar-brand-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">GSS Inventory</div>
+      <div class="sidebar-brand-sub">Asset Management</div>
+    </div>
+  </a>
+  <nav class="sidebar-nav">
+    <a href="index.html" class="active"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="add.html" ><span class="nav-icon">➕</span> Add Item</a>
+    <a href="items.html" ><span class="nav-icon">📦</span> View Items</a>
+    <a href="categories.html" ><span class="nav-icon">🗂️</span> Categories</a>
+    <a href="history.html" ><span class="nav-icon">📋</span> Stock History</a>
+    <a href="admin.html" ><span class="nav-icon">⚙️</span> Admin</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">GSS Inventory System</div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- TOP BAR (mobile only) -->
+<nav class="app-topbar">
+  <a class="topbar-brand" href="index.html">
+    <div class="topbar-brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+    </div>
+    <span class="topbar-brand-name">GSS Inventory</span>
+  </a>
+  <button class="topbar-hamburger" onclick="openSidebar()" aria-label="Menu">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p id="loaderMsg">Loading dashboard…</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+
+
+<div class="page-wrapper">
+<div class="page-content">
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="dashboard-hero">
+      <div>
+        <h1>Inventory Dashboard</h1>
+        <p>GSS Inventory — asset overview and quick actions</p>
+      </div>
+      <div class="hero-actions">
+        <a href="add.html" class="btn btn-white">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </a>
+        <a href="items.html" class="btn btn-outline-primary" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.08)">
+          View All Items
+        </a>
+        <a href="history.html" class="btn btn-outline-primary" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.08)">
+          📋 History
+        </a>
+        <button class="btn btn-success" onclick="exportItemsPDF()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Items</div>
+        <div class="stat-value" id="dashTotalItems">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🗂️</div>
+        <div class="stat-label">Categories</div>
+        <div class="stat-value" id="dashTotalCategories">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📍</div>
+        <div class="stat-label">Locations</div>
+        <div class="stat-value" id="dashTotalLocations">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🆕</div>
+        <div class="stat-label">Added This Month</div>
+        <div class="stat-value" id="dashThisMonth">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-label">Total Movements</div>
+        <div class="stat-value" id="dashTotalMovements">—</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;" id="dashGrid">
+
+      <!-- CATEGORY BREAKDOWN -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Items by Category</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="inv-table" id="catBreakdown">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th style="text-align:right">Items</th>
+                <th style="text-align:right">Share</th>
+              </tr>
+            </thead>
+            <tbody id="catBreakdownBody">
+              <tr><td colspan="3" style="text-align:center;padding:30px;color:var(--clr-muted)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECENT ITEMS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recently Added</span>
+          <a href="items.html" class="btn btn-sm btn-outline">View all</a>
+        </div>
+        <div class="card-body" style="padding:16px 20px">
+          <ul class="recent-list" id="dashRecent">
+            <li style="color:var(--clr-muted);font-size:14px">Loading…</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="auth.js"></script>
+<script src="common.js"></script>
+<script src="dashboard.js"></script>
+<script>
+  function adjustDashGrid() {
+    const g = document.getElementById('dashGrid');
+    if (g) g.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 340px';
+  }
+  adjustDashGrid();
+  window.addEventListener('resize', adjustDashGrid);
+  requireAuth();
+  loadDashboard();
+</script>
+
+<script>
+function openSidebar() {
+  document.getElementById('appSidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('appSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</script>
+</body>
+</html>

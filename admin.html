@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GSS Inventory — Admin Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar" id="appSidebar">
+  <a class="sidebar-brand" href="index.html">
+    <div class="sidebar-brand-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">GSS Inventory</div>
+      <div class="sidebar-brand-sub">Asset Management</div>
+    </div>
+  </a>
+  <nav class="sidebar-nav">
+    <a href="index.html" ><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="add.html" ><span class="nav-icon">➕</span> Add Item</a>
+    <a href="items.html" ><span class="nav-icon">📦</span> View Items</a>
+    <a href="categories.html" ><span class="nav-icon">🗂️</span> Categories</a>
+    <a href="history.html" ><span class="nav-icon">📋</span> Stock History</a>
+    <a href="admin.html" class="active"><span class="nav-icon">⚙️</span> Admin</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">GSS Inventory System</div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- TOP BAR (mobile only) -->
+<nav class="app-topbar">
+  <a class="topbar-brand" href="index.html">
+    <div class="topbar-brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+    </div>
+    <span class="topbar-brand-name">GSS Inventory</span>
+  </a>
+  <button class="topbar-hamburger" onclick="openSidebar()" aria-label="Menu">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p id="loaderMsg">Loading…</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+
+
+<div class="page-wrapper">
+<div class="page-content">
+  <div class="container" style="max-width:960px">
+
+    <!-- PAGE HEADER -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div style="width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">⚙️</div>
+      <div>
+        <h2 style="margin:0;font-size:22px">Admin Panel</h2>
+        <p style="margin:0;font-size:13px;color:var(--clr-muted)">System settings, maintenance, and audit tools</p>
+      </div>
+    </div>
+
+    <!-- SYSTEM STATS -->
+    <div class="stat-grid" id="adminStats" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:24px">
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Active Items</div><div class="stat-value" id="statActiveItems">—</div></div>
+      <div class="stat-card"><div class="stat-icon">🗑️</div><div class="stat-label">Deleted Items</div><div class="stat-value" id="statDeletedItems">—</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-label">Stock Log Entries</div><div class="stat-value" id="statStockLogs">—</div></div>
+      <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">Audit Log Entries</div><div class="stat-value" id="statAuditLogs">—</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="adminGrid">
+
+      <!-- ── BACKUP ── -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">💾 Data Backup</span>
+        </div>
+        <div class="card-body">
+          <div style="background:var(--blue-lt);border-radius:8px;padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:24px">🐘</span>
+            <div>
+              <div style="font-weight:700;color:var(--blue-dk);margin-bottom:4px">Supabase Automatic Backups</div>
+              <div style="font-size:13px;color:var(--blue-dk);line-height:1.6">
+                Your data is stored in Supabase PostgreSQL which automatically replicates and backs up daily. No manual backup needed — your data is always safe.
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+            📍 Database: <strong id="dbInfo">Loading…</strong>
+          </div>
+          <a href="https://supabase.com/dashboard/project/wlyrejxbbxyjocfrwfyk" target="_blank" class="btn btn-outline" style="width:100%;text-align:center">
+            🔗 View Data in Supabase Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- ── PURGE ── -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🧹 Purge Old Deleted Items</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;color:var(--clr-muted);margin-bottom:16px;line-height:1.6">
+            Permanently removes items that have been in the Trash for <strong>90+ days</strong>.
+            Items deleted within 90 days are left alone — you can still restore them from Trash.
+          </p>
+          <div style="background:#fef3c7;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#92400e;border:1px solid #fde68a">
+            ⚠️ This is <strong>permanent</strong> — purged items cannot be recovered. Run once per term to keep the sheet lean.
+          </div>
+          <button class="btn btn-danger" style="width:100%" onclick="runPurge()">
+            🧹 Purge Old Deleted Items
+          </button>
+        </div>
+      </div>
+
+      <!-- ── DRIVE FOLDER SETTINGS ── -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📁 Image Storage Folder</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;color:var(--clr-muted);margin-bottom:12px;line-height:1.6">
+            Item photos are saved to Google Drive. Enter your folder ID to organise them in a specific folder.
+          </p>
+          <div style="background:var(--clr-surface);border:1px solid var(--clr-border);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px">
+            <div style="color:var(--clr-muted);margin-bottom:4px">Current folder:</div>
+            <div id="currentFolder" style="font-weight:600">Loading…</div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="form-label">New Folder ID</label>
+            <input id="newFolderId" class="form-control" placeholder="Paste Google Drive folder ID here" />
+            <span style="font-size:11px;color:var(--clr-muted);margin-top:4px;display:block">
+              Get it from the folder URL: drive.google.com/drive/folders/<strong>THIS_PART</strong>
+            </span>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="saveFolderSetting()">
+            ✓ Validate &amp; Save Folder ID
+          </button>
+          <div id="folderResult" style="margin-top:10px;font-size:13px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- ── PIN SETTINGS ── -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔐 Access PIN</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;color:var(--clr-muted);margin-bottom:12px;line-height:1.6">
+            The access PIN is stored securely in Firebase. All staff use the same PIN to access the system.
+          </p>
+          <div style="background:var(--clr-surface);border:1px solid var(--clr-border);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px">
+            <div id="pinStatus" style="font-weight:600">Checking…</div>
+          </div>
+
+          <!-- Verify PIN -->
+          <div class="form-group" style="margin-bottom:8px">
+            <label class="form-label">Verify Current PIN</label>
+            <input id="testPin" class="form-control" type="password" placeholder="Enter PIN to verify it works" />
+          </div>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:14px" onclick="verifyPin()">
+            🔍 Verify PIN
+          </button>
+          <div id="pinVerifyResult" style="font-size:13px;display:none;margin-bottom:14px"></div>
+
+          <!-- Change PIN -->
+          <div style="border-top:1px solid var(--clr-border);padding-top:14px">
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px">Change PIN</div>
+            <div class="form-group" style="margin-bottom:8px">
+              <input id="newPinInput" class="form-control" type="password" placeholder="Enter new PIN (min 4 characters)" />
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="changePin()">
+              🔑 Update PIN
+            </button>
+            <div id="pinChangeResult" style="font-size:13px;display:none;margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /adminGrid -->
+
+    <!-- ── USER MANAGEMENT ── -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div>
+          <span class="card-title">👥 Staff User Management</span>
+          <div class="card-subtitle">Only admin can create and manage staff accounts</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showAddUserForm()">+ Add Staff</button>
+      </div>
+
+      <!-- Add user form (hidden by default) -->
+      <div id="addUserForm" style="display:none;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Full Name</label>
+            <input id="newUserName" class="form-control" placeholder="Staff member name" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Email Address</label>
+            <input id="newUserEmail" class="form-control" type="email" placeholder="email@school.com" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Temporary Password</label>
+            <input id="newUserPassword" class="form-control" type="text" placeholder="Min 8 characters" />
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="createStaffUser()">Create</button>
+            <button class="btn btn-outline" onclick="hideAddUserForm()">Cancel</button>
+          </div>
+        </div>
+        <div id="addUserResult" style="margin-top:10px;font-size:13px;display:none"></div>
+        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+          ℹ️ Staff will use this email and password to log in. Ask them to change their password after first login.
+        </div>
+      </div>
+
+      <!-- Users table -->
+      <div class="table-responsive">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">Loading users…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SUPABASE INFO ── -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <span class="card-title">🐘 Supabase Database Info</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="triggerGrid">
+
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px">
+            <div style="font-size:16px;font-weight:700;margin-bottom:8px">✅ What's automatic</div>
+            <ul style="font-size:13px;color:var(--muted);padding-left:18px;line-height:2">
+              <li>Daily database backups by Supabase</li>
+              <li>Data replicated across multiple servers</li>
+              <li>99.9% uptime guarantee</li>
+              <li>Automatic scaling as data grows</li>
+              <li>Point-in-time recovery available</li>
+              <li>No maintenance required from you</li>
+            </ul>
+          </div>
+
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px">
+            <div style="font-size:16px;font-weight:700;margin-bottom:8px">📊 Free Tier Limits</div>
+            <ul style="font-size:13px;color:var(--muted);padding-left:18px;line-height:2">
+              <li>500 MB database storage</li>
+              <li><strong style="color:var(--success)">Unlimited reads & writes</strong></li>
+              <li>2 GB bandwidth per month</li>
+              <li>50,000 monthly active users</li>
+              <li>Region: ap-south-1 (Mumbai)</li>
+              <li>Images: Google Drive (unlimited)</li>
+            </ul>
+          </div>
+
+        </div>
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+          <a href="https://supabase.com/dashboard/project/wlyrejxbbxyjocfrwfyk" target="_blank" class="btn btn-primary">
+            🔗 Open Supabase Dashboard
+          </a>
+          <a href="https://supabase.com/dashboard/project/wlyrejxbbxyjocfrwfyk/editor" target="_blank" class="btn btn-outline">
+            📊 View Tables & Data
+          </a>
+          <a href="migrate.html" class="btn btn-outline" style="border-color:var(--warning);color:var(--warning)">
+            🔄 Run Data Migration
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUDIT LOG ── -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div>
+          <span class="card-title">🔍 Audit Log</span>
+          <p style="font-size:13px;color:var(--clr-muted);margin-top:3px">Every create, update, delete, restore, backup and purge action — who did it and when.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadAuditLog()">🔄 Refresh</button>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:14px 24px;border-bottom:1px solid var(--clr-border);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <div class="search-wrap" style="flex:1;min-width:180px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="auditSearch" class="form-control search-input" placeholder="Search name, action, who…" oninput="filterAuditLog()" />
+        </div>
+        <select id="auditTypeFilter" class="form-select" style="width:auto;min-width:140px" onchange="filterAuditLog()">
+          <option value="">All Actions</option>
+          <option value="CREATE">✅ Create</option>
+          <option value="UPDATE">✏️ Update</option>
+          <option value="DELETE">🗑️ Delete</option>
+          <option value="RESTORE">♻️ Restore</option>
+          <option value="BACKUP">💾 Backup</option>
+          <option value="PURGE">🧹 Purge</option>
+        </select>
+      </div>
+
+      <div class="table-responsive">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Name</th>
+              <th>Done By</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody">
+            <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--clr-muted)">Click Refresh to load audit log…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" id="auditEmptyState" style="display:none">
+        <div class="empty-icon">🔍</div>
+        <h3>No audit records found</h3>
+        <p>Actions will appear here as you use the system.</p>
+      </div>
+
+      <div class="table-footer">
+        <span class="items-info" id="auditInfo"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script src="auth.js"></script>
+<script src="common.js"></script>
+<script>
+/* ═══════════════════════════════
+   ADMIN PAGE JS — Supabase version
+═══════════════════════════════ */
+let _allAuditLogs      = [];
+let _filteredAuditLogs = [];
+
+async function loadAdminPage() {
+  showLoader();
+  try {
+    const data = await apiFetch('?action=getAdminSettings');
+    if (!data.success) throw new Error(data.error || 'Failed to load settings');
+
+    document.getElementById('statActiveItems').textContent  = data.totalItems;
+    document.getElementById('statDeletedItems').textContent = data.deletedItems;
+    document.getElementById('statStockLogs').textContent    = data.totalLogs;
+    document.getElementById('statAuditLogs').textContent    = data.totalAuditLogs;
+
+    document.getElementById('currentFolder').textContent = data.folderName || 'Not set';
+
+    const pinEl = document.getElementById('pinStatus');
+    pinEl.innerHTML = data.pinIsSet
+      ? '<span style="color:var(--success)">✅ PIN is set and active in Supabase</span>'
+      : '<span style="color:var(--warning)">⚠️ No PIN set yet — enter one below to create it</span>';
+
+    const dbEl = document.getElementById('dbInfo');
+    if (dbEl) dbEl.textContent = data.ssName || 'Supabase PostgreSQL';
+
+    adjustAdminGrid();
+    await loadAuditLog();
+  } catch (err) {
+    console.error('Admin load failed', err);
+    showToast('Failed to load admin settings: ' + err.message, 5000, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+function adjustAdminGrid() {
+  const g  = document.getElementById('adminGrid');
+  const tg = document.getElementById('triggerGrid');
+  const narrow = window.innerWidth < 700;
+  if (g)  g.style.gridTemplateColumns  = narrow ? '1fr' : '1fr 1fr';
+  if (tg) tg.style.gridTemplateColumns = narrow ? '1fr' : '1fr 1fr';
+}
+window.addEventListener('resize', adjustAdminGrid);
+
+/* ── Backup — Supabase handles this automatically ── */
+async function runBackup() {
+  showToast('ℹ️ Supabase automatically backs up your database daily. No manual backup needed.', 5000, 'info');
+}
+
+/* ── Purge ── */
+async function runPurge() {
+  if (!confirm('Permanently delete all items that have been in Trash for 90+ days?\n\nThis CANNOT be undone.')) return;
+  setLoaderMsg('Purging old deleted items…');
+  showLoader();
+  try {
+    const data = await apiFetch('?action=runPurge', { method: 'POST', body: new URLSearchParams({}) });
+    if (!data.success) throw new Error(data.error);
+    showToast('🧹 ' + data.message, 5000, 'success');
+    // Refresh stats
+    const stats = await apiFetch('?action=getAdminSettings');
+    if (stats.success) {
+      document.getElementById('statDeletedItems').textContent = stats.deletedItems;
+      document.getElementById('statActiveItems').textContent  = stats.totalItems;
+    }
+    await loadAuditLog();
+  } catch (err) {
+    showToast('Purge failed: ' + err.message, 5000, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── Folder setting (for Google Drive image uploads) ── */
+async function saveFolderSetting() {
+  const folderId = (document.getElementById('newFolderId').value || '').trim();
+  if (!folderId) { showToast('Please enter a folder ID', 3000, 'error'); return; }
+  setLoaderMsg('Saving folder ID…');
+  showLoader();
+  const resultEl = document.getElementById('folderResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST', body: new URLSearchParams({ newFolderId: folderId })
+    });
+    resultEl.style.display = '';
+    resultEl.innerHTML = data.success
+      ? `<div style="color:var(--success);background:var(--success-lt);padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ ${escapeHtml(data.message)}</div>`
+      : `<div style="color:var(--danger);background:var(--danger-lt);padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ ${escapeHtml(data.error)}</div>`;
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:var(--danger)">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── Change PIN — stored in Supabase settings table ── */
+async function changePin() {
+  const newPin = (document.getElementById('newPinInput').value || '').trim();
+  if (!newPin) { showToast('Enter a new PIN', 3000, 'error'); return; }
+  if (newPin.length < 4) { showToast('PIN must be at least 4 characters', 3000, 'error'); return; }
+  if (!confirm('Change the access PIN to "' + newPin + '"?\nAll staff will need to use the new PIN.')) return;
+  showLoader();
+  const resultEl = document.getElementById('pinChangeResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST', body: new URLSearchParams({ newPin })
+    });
+    resultEl.style.display = '';
+    if (data.success) {
+      resultEl.innerHTML = `<div style="color:var(--success);background:var(--success-lt);padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ PIN changed successfully! New PIN is now active for all staff.</div>`;
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('pinStatus').innerHTML = '<span style="color:var(--success)">✅ PIN is set and active in Supabase</span>';
+    } else {
+      resultEl.innerHTML = `<div style="color:var(--danger);background:var(--danger-lt);padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ ${escapeHtml(data.error)}</div>`;
+    }
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:var(--danger)">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── Verify PIN ── */
+async function verifyPin() {
+  const pin = (document.getElementById('testPin').value || '').trim();
+  if (!pin) { showToast('Enter a PIN to verify', 3000, 'error'); return; }
+  showLoader();
+  const resultEl = document.getElementById('pinVerifyResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST', body: new URLSearchParams({ action2: 'verifyPin', testPin: pin })
+    });
+    resultEl.style.display = '';
+    resultEl.innerHTML = (data.success && data.pinMatches)
+      ? `<div style="color:var(--success);background:var(--success-lt);padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ PIN is correct!</div>`
+      : `<div style="color:var(--danger);background:var(--danger-lt);padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ PIN is incorrect.</div>`;
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:var(--danger)">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+    document.getElementById('testPin').value = '';
+  }
+}
+
+/* ── Audit log ── */
+async function loadAuditLog() {
+  const tbody = document.getElementById('auditTableBody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr>`;
+  try {
+    const data = await apiFetch('?action=getAuditLog');
+    _allAuditLogs = (data && data.data) || [];
+    filterAuditLog();
+  } catch (err) {
+    console.error('Audit log load failed', err);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger)">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function filterAuditLog() {
+  const q    = (document.getElementById('auditSearch')?.value || '').toLowerCase();
+  const type = document.getElementById('auditTypeFilter')?.value || '';
+  _filteredAuditLogs = _allAuditLogs.filter(r => {
+    const matchType = !type || r[2] === type;
+    const matchQ    = !q
+      || (r[2]||'').toLowerCase().includes(q)
+      || (r[3]||'').toLowerCase().includes(q)
+      || (r[5]||'').toLowerCase().includes(q)
+      || (r[6]||'').toLowerCase().includes(q)
+      || (r[7]||'').toLowerCase().includes(q);
+    return matchType && matchQ;
+  });
+  renderAuditLog();
+}
+
+function auditActionBadge(action) {
+  const map = {
+    'CREATE':  { cls:'badge-green',  icon:'✅' },
+    'UPDATE':  { cls:'badge-blue',   icon:'✏️' },
+    'DELETE':  { cls:'badge-red',    icon:'🗑️' },
+    'RESTORE': { cls:'badge-purple', icon:'♻️' },
+    'PURGE':   { cls:'badge-amber',  icon:'🧹' },
+    'SETTINGS':{ cls:'badge-gray',   icon:'⚙️' },
+  };
+  const b = map[action] || { cls:'badge-gray', icon:'' };
+  return `<span class="badge ${b.cls}">${b.icon} ${escapeHtml(action)}</span>`;
+}
+
+function renderAuditLog() {
+  const tbody   = document.getElementById('auditTableBody');
+  const emptyEl = document.getElementById('auditEmptyState');
+  const infoEl  = document.getElementById('auditInfo');
+
+  if (!_filteredAuditLogs.length) {
+    if (tbody)   tbody.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = '';
+    if (infoEl)  infoEl.textContent = '';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (tbody) {
+    tbody.innerHTML = _filteredAuditLogs.map(r => `
+      <tr>
+        <td style="font-size:12px;white-space:nowrap;color:var(--muted)">${escapeHtml(formatTs(r[1]))}</td>
+        <td>${auditActionBadge(r[2])}</td>
+        <td style="font-size:12px;color:var(--muted)">${escapeHtml(r[3]||'')}</td>
+        <td style="font-weight:600;font-size:13px">${escapeHtml(r[5]||r[4]||'—')}</td>
+        <td style="font-size:13px">${escapeHtml(r[6]||'—')}</td>
+        <td style="font-size:12px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            title="${escapeHtml(r[7]||'')}">${escapeHtml(r[7]||'—')}</td>
+      </tr>`).join('');
+  }
+  const total = _filteredAuditLogs.length;
+  if (infoEl) infoEl.textContent = `Showing ${total} audit record${total!==1?'s':''} (latest 500)`;
+}
+
+requireAuth();
+  loadAdminPage();
+</script>
+
+function openSidebar() {
+  document.getElementById('appSidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('appSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</body>
+
+let _allAuditLogs      = [];
+let _filteredAuditLogs = [];
+
+async function loadAdminPage() {
+  showLoader();
+  try {
+    const data = await apiFetch('?action=getAdminSettings');
+    if (!data.success) throw new Error(data.error || 'Failed to load settings');
+
+    // Stats
+    document.getElementById('statActiveItems').textContent  = data.totalItems;
+    document.getElementById('statDeletedItems').textContent  = data.deletedItems;
+    document.getElementById('statStockLogs').textContent     = data.totalLogs;
+    document.getElementById('statAuditLogs').textContent     = data.totalAuditLogs;
+
+    // Folder
+    document.getElementById('currentFolder').textContent = data.folderName || 'Not set';
+
+    // PIN status — with Firebase PIN is always stored in Firestore
+    const pinEl = document.getElementById('pinStatus');
+    pinEl.innerHTML = data.pinIsSet
+      ? '<span style="color:#16a34a">✅ PIN is set and active in Firebase</span>'
+      : '<span style="color:#f59e0b">⚠️ No PIN set yet — enter one below to create it</span>';
+
+    // Database info
+    const dbEl = document.getElementById('dbInfo');
+    if (dbEl) dbEl.textContent = data.ssName || '';
+
+    adjustAdminGrid();
+    await loadAuditLog();
+  } catch (err) {
+    console.error('Admin load failed', err);
+    showToast('Failed to load admin settings: ' + err.message, 5000, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+function adjustAdminGrid() {
+  const g  = document.getElementById('adminGrid');
+  const tg = document.getElementById('triggerGrid');
+  const narrow = window.innerWidth < 700;
+  if (g)  g.style.gridTemplateColumns  = narrow ? '1fr' : '1fr 1fr';
+  if (tg) tg.style.gridTemplateColumns = narrow ? '1fr' : '1fr 1fr';
+}
+window.addEventListener('resize', adjustAdminGrid);
+
+/* ── Backup — Firebase has automatic backups, just inform user ── */
+async function runBackup() {
+  showToast('ℹ️ Firebase automatically backs up your data daily. No manual backup needed.', 5000, 'info');
+}
+
+/* ── Purge ── */
+async function runPurge() {
+  if (!confirm('Permanently delete all items that have been in Trash for 90+ days?\n\nThis CANNOT be undone.')) return;
+  setLoaderMsg('Purging old deleted items…');
+  showLoader();
+  try {
+    const data = await apiFetch('?action=runPurge', { method: 'POST', body: new URLSearchParams({}) });
+    if (!data.success) throw new Error(data.error);
+    clearApiCache();
+    showToast('🧹 ' + data.message, 5000, 'success');
+    const stats = await apiFetch('?action=getAdminSettings');
+    if (stats.success) {
+      document.getElementById('statDeletedItems').textContent = stats.deletedItems;
+      document.getElementById('statActiveItems').textContent  = stats.totalItems;
+    }
+    await loadAuditLog();
+  } catch (err) {
+    showToast('Purge failed: ' + err.message, 5000, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── Folder setting ── */
+async function saveFolderSetting() {
+  const folderId = (document.getElementById('newFolderId').value || '').trim();
+  if (!folderId) { showToast('Please enter a folder ID', 3000, 'error'); return; }
+  setLoaderMsg('Saving folder ID…');
+  showLoader();
+  const resultEl = document.getElementById('folderResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST',
+      body: new URLSearchParams({ newFolderId: folderId })
+    });
+    resultEl.style.display = '';
+    if (data.success) {
+      resultEl.innerHTML = `<div style="color:#16a34a;background:#f0fdf4;padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ ${escapeHtml(data.message)}</div>`;
+    } else {
+      resultEl.innerHTML = `<div style="color:#dc2626;background:#fef2f2;padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ ${escapeHtml(data.error)}</div>`;
+    }
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:#dc2626">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── Change PIN directly in Firebase ── */
+async function changePin() {
+  const newPin = (document.getElementById('newPinInput').value || '').trim();
+  if (!newPin) { showToast('Enter a new PIN', 3000, 'error'); return; }
+  if (newPin.length < 4) { showToast('PIN must be at least 4 characters', 3000, 'error'); return; }
+  if (!confirm('Change the access PIN to "' + newPin + '"? All staff will need to use the new PIN.')) return;
+  showLoader();
+  const resultEl = document.getElementById('pinChangeResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST',
+      body: new URLSearchParams({ newPin })
+    });
+    resultEl.style.display = '';
+    if (data.success) {
+      // Update session too
+      sessionStorage.setItem('gss_inv_pin', newPin);
+      resultEl.innerHTML = `<div style="color:#16a34a;background:#f0fdf4;padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ PIN changed successfully! New PIN is now active.</div>`;
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('pinStatus').innerHTML = '<span style="color:#16a34a">✅ PIN is set and active in Firebase</span>';
+    } else {
+      resultEl.innerHTML = `<div style="color:#dc2626;background:#fef2f2;padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ ${escapeHtml(data.error)}</div>`;
+    }
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:#dc2626">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+  }
+}
+
+/* ── PIN verify ── */
+async function verifyPin() {
+  const pin = (document.getElementById('testPin').value || '').trim();
+  if (!pin) { showToast('Enter a PIN to verify', 3000, 'error'); return; }
+  showLoader();
+  const resultEl = document.getElementById('pinVerifyResult');
+  try {
+    const data = await apiFetch('?action=saveAdminSettings', {
+      method: 'POST',
+      body: new URLSearchParams({ action2: 'verifyPin', testPin: pin })
+    });
+    resultEl.style.display = '';
+    if (data.success && data.pinMatches) {
+      resultEl.innerHTML = `<div style="color:#16a34a;background:#f0fdf4;padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">✅ PIN is correct!</div>`;
+    } else {
+      resultEl.innerHTML = `<div style="color:#dc2626;background:#fef2f2;padding:10px 12px;border-radius:8px;border:1px solid #fecaca">❌ PIN is incorrect.</div>`;
+    }
+  } catch (err) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<div style="color:#dc2626">Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    hideLoader();
+    document.getElementById('testPin').value = '';
+  }
+}
+
+/* ── Audit log ── */
+async function loadAuditLog() {
+  const tbody = document.getElementById('auditTableBody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--clr-muted)">Loading…</td></tr>`;
+  try {
+    const data = await apiFetch('?action=getAuditLog');
+    _allAuditLogs = (data && data.data) || [];
+    filterAuditLog();
+  } catch (err) {
+    console.error('Audit log load failed', err);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:red">Failed to load audit log: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function filterAuditLog() {
+  const q    = (document.getElementById('auditSearch')?.value || '').toLowerCase();
+  const type = document.getElementById('auditTypeFilter')?.value || '';
+  _filteredAuditLogs = _allAuditLogs.filter(r => {
+    const matchType = !type || r[2] === type;
+    const matchQ = !q
+      || (r[2]||'').toLowerCase().includes(q)
+      || (r[3]||'').toLowerCase().includes(q)
+      || (r[5]||'').toLowerCase().includes(q)
+      || (r[6]||'').toLowerCase().includes(q)
+      || (r[7]||'').toLowerCase().includes(q);
+    return matchType && matchQ;
+  });
+  renderAuditLog();
+}
+
+function auditActionBadge(action) {
+  const map = {
+    'CREATE':  { cls:'badge-green',  icon:'✅' },
+    'UPDATE':  { cls:'badge-blue',   icon:'✏️' },
+    'DELETE':  { cls:'badge-red',    icon:'🗑️' },
+    'RESTORE': { cls:'badge-purple', icon:'♻️' },
+    'PURGE':   { cls:'badge-amber',  icon:'🧹' },
+    'SETTINGS':{ cls:'badge-gray',   icon:'⚙️' },
+  };
+  const b = map[action] || { cls:'badge-gray', icon:'' };
+  return `<span class="badge ${b.cls}">${b.icon} ${escapeHtml(action)}</span>`;
+}
+
+function renderAuditLog() {
+  const tbody   = document.getElementById('auditTableBody');
+  const emptyEl = document.getElementById('auditEmptyState');
+  const infoEl  = document.getElementById('auditInfo');
+
+  if (!_filteredAuditLogs.length) {
+    if (tbody)   tbody.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = '';
+    if (infoEl)  infoEl.textContent = '';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (tbody) {
+    tbody.innerHTML = _filteredAuditLogs.map(r => `
+      <tr>
+        <td style="font-size:12px;white-space:nowrap;color:var(--clr-muted)">${escapeHtml(formatTs(r[1]))}</td>
+        <td>${auditActionBadge(r[2])}</td>
+        <td style="font-size:12px;color:var(--clr-muted)">${escapeHtml(r[3]||'')}</td>
+        <td style="font-weight:600;font-size:13px">${escapeHtml(r[5]||r[4]||'—')}</td>
+        <td style="font-size:13px">${escapeHtml(r[6]||'—')}</td>
+        <td style="font-size:12px;color:var(--clr-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            title="${escapeHtml(r[7]||'')}">${escapeHtml(r[7]||'—')}</td>
+      </tr>`).join('');
+  }
+  const total = _filteredAuditLogs.length;
+  if (infoEl) infoEl.textContent = `Showing ${total} audit record${total!==1?'s':''} (latest 500)`;
+}
+
+// Boot
+requireAuth();
+loadAdminPage();
+loadUsers();
+</script>
+
+<script>
+/* ══════════════════════════════════════════
+   USER MANAGEMENT
+══════════════════════════════════════════ */
+const SB_ADMIN_URL = 'https://wlyrejxbbxyjocfrwfyk.supabase.co';
+const SB_ADMIN_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseXJlanhiYnh5am9jZnJ3ZnlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1OTIxOTIsImV4cCI6MjEwNDE2ODE5Mn0.38q1she-z0NcdWYgs5nPtOq1T73dFMkK1gJyPDzDQp0';
+const SB_HDR = { 'apikey': SB_ADMIN_KEY, 'Authorization': 'Bearer ' + SB_ADMIN_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+function showAddUserForm() { document.getElementById('addUserForm').style.display=''; document.getElementById('newUserName').focus(); }
+function hideAddUserForm() {
+  document.getElementById('addUserForm').style.display='none';
+  document.getElementById('addUserResult').style.display='none';
+  ['newUserName','newUserEmail','newUserPassword'].forEach(id=>{ document.getElementById(id).value=''; });
+}
+
+async function loadUsers() {
+  const tbody = document.getElementById('usersTableBody');
+  if (!tbody) return;
+  try {
+    const res   = await fetch(`${SB_ADMIN_URL}/rest/v1/user_profiles?order=created_at.asc`, { headers: SB_HDR });
+    const users = await res.json();
+    if (!Array.isArray(users) || !users.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No staff accounts yet. Click "+ Add Staff" to create one.</td></tr>';
+      return;
+    }
+    const me = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td style="font-weight:600">${escapeHtml(u.full_name||'—')}</td>
+        <td style="color:var(--muted);font-size:13px">${escapeHtml(u.email||'')}</td>
+        <td><span class="badge ${u.role==='admin'?'badge-purple':'badge-blue'}">${u.role||'staff'}</span></td>
+        <td style="font-size:12px;color:var(--muted)">${escapeHtml(formatTs(u.created_at))}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-outline" onclick="toggleUserRole('${u.id}','${u.role||'staff'}','${escapeHtml(u.email||'')}')">
+              Make ${u.role==='admin'?'Staff':'Admin'}
+            </button>
+            ${(!me || u.email !== me.email) ? `<button class="btn btn-sm btn-danger" onclick="removeUser('${u.id}','${escapeHtml(u.email||'')}')">Remove</button>` : '<span style="font-size:12px;color:var(--muted)">(You)</span>'}
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--danger)">Failed to load users</td></tr>`;
+  }
+}
+
+async function createStaffUser() {
+  const name     = document.getElementById('newUserName').value.trim();
+  const email    = document.getElementById('newUserEmail').value.trim();
+  const password = document.getElementById('newUserPassword').value.trim();
+  const resultEl = document.getElementById('addUserResult');
+  if (!name||!email||!password) { showToast('Fill in all fields', 3000, 'error'); return; }
+  if (password.length < 8)      { showToast('Password must be at least 8 characters', 3000, 'error'); return; }
+  showLoader(); resultEl.style.display='none';
+  try {
+    const res  = await fetch(`${SB_ADMIN_URL}/auth/v1/signup`, {
+      method:'POST', headers:{...SB_HDR,'Prefer':'return=representation'},
+      body: JSON.stringify({ email, password, data:{ full_name: name } })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description||data.msg||data.error||'Failed to create account');
+    if (data.user && data.user.id) {
+      await fetch(`${SB_ADMIN_URL}/rest/v1/user_profiles`, {
+        method:'POST', headers: SB_HDR,
+        body: JSON.stringify({ id:data.user.id, email, full_name:name, role:'staff' })
+      });
+    }
+    resultEl.style.display='';
+    resultEl.innerHTML=`<div style="color:var(--success);background:var(--success-lt);padding:10px 12px;border-radius:8px;border:1px solid #bbf7d0">
+      ✅ Account created for <strong>${escapeHtml(name)}</strong><br>
+      <span style="font-size:12px">Email: ${escapeHtml(email)} | Password: ${escapeHtml(password)}<br>Share these with the staff member. They can change their password after first login.</span>
+    </div>`;
+    ['newUserName','newUserEmail','newUserPassword'].forEach(id=>{ document.getElementById(id).value=''; });
+    showToast(`✅ Account created for ${name}`, 4000, 'success');
+    await loadUsers();
+  } catch(err) {
+    resultEl.style.display='';
+    resultEl.innerHTML=`<div style="color:var(--danger);background:var(--danger-lt);padding:10px 12px;border-radius:8px">❌ ${escapeHtml(err.message)}</div>`;
+  } finally { hideLoader(); }
+}
+
+async function toggleUserRole(userId, currentRole, email) {
+  const newRole = currentRole==='admin' ? 'staff' : 'admin';
+  if (!confirm(`Change ${email} to ${newRole}?`)) return;
+  showLoader();
+  try {
+    await fetch(`${SB_ADMIN_URL}/rest/v1/user_profiles?id=eq.${userId}`, { method:'PATCH', headers:SB_HDR, body:JSON.stringify({role:newRole}) });
+    showToast(`${email} is now ${newRole}`, 3000, 'success');
+    await loadUsers();
+  } catch(err) { showToast('Failed: '+err.message, 4000, 'error'); }
+  finally { hideLoader(); }
+}
+
+async function removeUser(userId, email) {
+  if (!confirm(`Remove access for ${email}?\n\nThey will no longer be able to log in.`)) return;
+  showLoader();
+  try {
+    await fetch(`${SB_ADMIN_URL}/rest/v1/user_profiles?id=eq.${userId}`, { method:'DELETE', headers:SB_HDR });
+    showToast(`${email} removed`, 3000, 'success');
+    await loadUsers();
+  } catch(err) { showToast('Failed: '+err.message, 4000, 'error'); }
+  finally { hideLoader(); }
+}
+
+function openSidebar() {
+  document.getElementById('appSidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('appSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</script>
+</body>
+</html>

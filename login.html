@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GSS Inventory — Login</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0D1B2A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GSS Inventory" />
+    <link rel="apple-touch-icon" href="logo.png" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0d1b2a;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .login-wrap {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      /* Brand */
+      .brand {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .brand img {
+        height: 60px;
+        object-fit: contain;
+        margin-bottom: 14px;
+      }
+      .brand h1 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.3px;
+      }
+      .brand p {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+
+      /* Card */
+      .card {
+        background: #162032;
+        border: 1px solid #1e2d40;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      }
+      .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 6px;
+      }
+      .card-sub {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 24px;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 6px;
+        letter-spacing: 0.02em;
+      }
+      input {
+        width: 100%;
+        padding: 11px 14px;
+        background: #0d1b2a;
+        border: 1.5px solid #1e2d40;
+        border-radius: 10px;
+        color: #e2e8f0;
+        font-size: 14px;
+        font-family: inherit;
+        transition:
+          border-color 0.14s,
+          box-shadow 0.14s;
+        -webkit-appearance: none;
+      }
+      input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+      input::placeholder {
+        color: #334155;
+      }
+      input[type="password"] {
+        letter-spacing: 0.1em;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.14s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1.5px solid #1e2d40;
+        color: #94a3b8;
+        margin-top: 10px;
+      }
+      .btn-outline:hover {
+        background: #1e2d40;
+        color: #e2e8f0;
+      }
+
+      /* Error / success */
+      .msg {
+        padding: 11px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 16px;
+        display: none;
+      }
+      .msg-error {
+        background: #3b0a0a;
+        border: 1px solid #7f1d1d;
+        color: #fca5a5;
+      }
+      .msg-success {
+        background: #052e16;
+        border: 1px solid #14532d;
+        color: #86efac;
+      }
+      .msg.show {
+        display: block;
+      }
+
+      /* Tab switcher */
+      .tabs {
+        display: flex;
+        gap: 0;
+        background: #0d1b2a;
+        border-radius: 10px;
+        padding: 4px;
+        margin-bottom: 24px;
+      }
+      .tab {
+        flex: 1;
+        padding: 9px;
+        border-radius: 7px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.14s;
+        font-family: inherit;
+      }
+      .tab.active {
+        background: #2563eb;
+        color: #fff;
+      }
+
+      /* Forgot password link */
+      .forgot {
+        text-align: right;
+        margin-top: -8px;
+        margin-bottom: 16px;
+      }
+      .forgot a {
+        font-size: 12.5px;
+        color: #2563eb;
+        text-decoration: none;
+      }
+      .forgot a:hover {
+        text-decoration: underline;
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 12px;
+        color: #334155;
+      }
+
+      /* Spinner */
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: none;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-wrap">
+      <!-- Brand -->
+      <div class="brand">
+        <img src="logo.png" alt="GSS" onerror="this.style.display = 'none'" />
+        <h1>GSS Inventory System</h1>
+        <p>School Asset Management</p>
+      </div>
+
+      <!-- Card -->
+      <div class="card">
+        <!-- No self-signup tab — admin creates accounts via Supabase dashboard -->
+        <div class="card-title">Staff Sign In</div>
+        <div class="card-sub">
+          Enter your credentials provided by the administrator
+        </div>
+
+        <!-- Error/Success message -->
+        <div class="msg msg-error" id="msgError"></div>
+        <div class="msg msg-success" id="msgSuccess"></div>
+
+        <!-- Login Form only -->
+        <div id="loginForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="you@school.com"
+              autocomplete="email"
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              onkeydown="if (event.key === 'Enter') doLogin();"
+            />
+          </div>
+          <div class="forgot">
+            <a
+              href="#"
+              onclick="
+                doForgotPassword();
+                return false;
+              "
+              >Forgot password?</a
+            >
+          </div>
+          <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">
+            <span class="spinner" id="loginSpinner"></span>
+            <span id="loginBtnText">Sign In</span>
+          </button>
+        </div>
+
+        <!-- Signup disabled — admin creates accounts via Supabase dashboard -->
+      </div>
+
+      <div class="footer">© The Golden Spiral — GSS Inventory System</div>
+    </div>
+
+    <script>
+      const SUPABASE_URL = "https://wlyrejxbbxyjocfrwfyk.supabase.co";
+      const SUPABASE_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseXJlanhiYnh5am9jZnJ3ZnlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1OTIxOTIsImV4cCI6MjEwNDE2ODE5Mn0.38q1she-z0NcdWYgs5nPtOq1T73dFMkK1gJyPDzDQp0";
+
+      /* ── If already logged in, redirect ── */
+      const stored = localStorage.getItem("gss_session");
+      if (stored) {
+        try {
+          const sess = JSON.parse(stored);
+          if (
+            sess &&
+            sess.access_token &&
+            new Date(sess.expires_at * 1000) > new Date()
+          ) {
+            window.location.replace("index.html");
+          }
+        } catch (e) {
+          localStorage.removeItem("gss_session");
+        }
+      }
+
+      function switchTab(tab) {
+        document.getElementById("loginForm").style.display =
+          tab === "login" ? "" : "none";
+        document.getElementById("signupForm").style.display =
+          tab === "signup" ? "" : "none";
+        document
+          .getElementById("tabLogin")
+          .classList.toggle("active", tab === "login");
+        document
+          .getElementById("tabSignup")
+          .classList.toggle("active", tab === "signup");
+        clearMessages();
+      }
+
+      function showError(msg) {
+        const el = document.getElementById("msgError");
+        el.textContent = msg;
+        el.classList.add("show");
+        document.getElementById("msgSuccess").classList.remove("show");
+      }
+      function showSuccess(msg) {
+        const el = document.getElementById("msgSuccess");
+        el.textContent = msg;
+        el.classList.add("show");
+        document.getElementById("msgError").classList.remove("show");
+      }
+      function clearMessages() {
+        document.getElementById("msgError").classList.remove("show");
+        document.getElementById("msgSuccess").classList.remove("show");
+      }
+
+      function setLoading(type, loading) {
+        const btn = document.getElementById(type + "Btn");
+        const spinner = document.getElementById(type + "Spinner");
+        const text = document.getElementById(type + "BtnText");
+        btn.disabled = loading;
+        spinner.style.display = loading ? "block" : "none";
+        text.textContent = loading
+          ? type === "login"
+            ? "Signing in…"
+            : "Creating account…"
+          : type === "login"
+            ? "Sign In"
+            : "Create Account";
+      }
+
+      async function doLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        if (!email || !password) {
+          showError("Please enter your email and password");
+          return;
+        }
+
+        clearMessages();
+        setLoading("login", true);
+
+        try {
+          const res = await fetch(
+            `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+            {
+              method: "POST",
+              headers: {
+                apikey: SUPABASE_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            },
+          );
+          const data = await res.json();
+
+          if (!res.ok) {
+            const msg =
+              data.error_description ||
+              data.msg ||
+              data.error ||
+              "Login failed";
+            showError(
+              msg === "Invalid login credentials"
+                ? "Incorrect email or password. Please try again."
+                : msg,
+            );
+            return;
+          }
+
+          // Save session
+          localStorage.setItem(
+            "gss_session",
+            JSON.stringify({
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+              expires_at:
+                data.expires_at ||
+                Math.floor(Date.now() / 1000) + data.expires_in,
+              user: data.user,
+            }),
+          );
+
+          showSuccess("Signed in successfully! Redirecting…");
+          setTimeout(() => {
+            window.location.replace("index.html");
+          }, 600);
+        } catch (err) {
+          showError(
+            "Connection error. Please check your internet and try again.",
+          );
+        } finally {
+          setLoading("login", false);
+        }
+      }
+
+      async function doSignup() {
+        const name = document.getElementById("signupName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value;
+        const confirm = document.getElementById("signupConfirm").value;
+
+        if (!name) {
+          showError("Please enter your full name");
+          return;
+        }
+        if (!email) {
+          showError("Please enter your email address");
+          return;
+        }
+        if (password.length < 8) {
+          showError("Password must be at least 8 characters");
+          return;
+        }
+        if (password !== confirm) {
+          showError("Passwords do not match");
+          return;
+        }
+
+        clearMessages();
+        setLoading("signup", true);
+
+        try {
+          const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              password,
+              data: { full_name: name },
+            }),
+          });
+          const data = await res.json();
+
+          if (!res.ok) {
+            showError(
+              data.error_description ||
+                data.msg ||
+                data.error ||
+                "Signup failed",
+            );
+            return;
+          }
+
+          // Create user profile record
+          if (data.user && data.user.id) {
+            await fetch(`${SUPABASE_URL}/rest/v1/user_profiles`, {
+              method: "POST",
+              headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + SUPABASE_KEY,
+                "Content-Type": "application/json",
+                Prefer: "return=minimal",
+              },
+              body: JSON.stringify({
+                id: data.user.id,
+                email,
+                full_name: name,
+                role: "staff",
+              }),
+            });
+          }
+
+          if (data.session) {
+            // Auto-confirm enabled — save session and redirect
+            localStorage.setItem(
+              "gss_session",
+              JSON.stringify({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+                expires_at:
+                  data.session.expires_at ||
+                  Math.floor(Date.now() / 1000) + data.session.expires_in,
+                user: data.user,
+              }),
+            );
+            showSuccess("Account created! Redirecting…");
+            setTimeout(() => {
+              window.location.replace("index.html");
+            }, 600);
+          } else {
+            // Email confirmation required
+            showSuccess(
+              "Account created! Check your email to confirm your account, then sign in.",
+            );
+            switchTab("login");
+            document.getElementById("loginEmail").value = email;
+          }
+        } catch (err) {
+          showError(
+            "Connection error. Please check your internet and try again.",
+          );
+        } finally {
+          setLoading("signup", false);
+        }
+      }
+
+      async function doForgotPassword() {
+        const email = document.getElementById("loginEmail").value.trim();
+        if (!email) {
+          showError(
+            "Enter your email address first, then click Forgot password",
+          );
+          return;
+        }
+
+        clearMessages();
+        try {
+          await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+          showSuccess(
+            `Password reset email sent to ${email}. Check your inbox.`,
+          );
+        } catch (err) {
+          showError("Failed to send reset email. Please try again.");
+        }
+      }
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () =>
+          navigator.serviceWorker.register("/sw.js").catch(() => {}),
+        );
+      }
+    </script>
+  </body>
+</html>
